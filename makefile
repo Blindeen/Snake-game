@@ -1,33 +1,31 @@
-SRC=./src
-OBJ=./obj
+COMP = g++
+EXT = cpp
 
-all: $(OBJ) winsys
+CFLAGS = -Wall -pedantic -std=c++11
+LDFLAGS = -lncurses
 
-# Creating folder
-$(OBJ):
-	mkdir -p $(OBJ)
+SRC_DIR = ./src
+OBJ_DIR = ./obj
 
-# Dynamik linking
-winsys: $(OBJ)/main.o $(OBJ)/screen.o $(OBJ)/winsys.o $(OBJ)/snake.o
-	g++ -g -Wall -pedantic -std=c++11 $^ -o $@ -lncurses
+SRC = $(wildcard $(SRC_DIR)/*.$(EXT))
+OBJ = $(patsubst $(SRC_DIR)/%.$(EXT), $(OBJ_DIR)/%.o, $(SRC))
+EXEC = Snake
 
-# With debugging symbols
-$(OBJ)/main.o: $(SRC)/main.cpp $(SRC)/winsys.h $(SRC)/screen.h $(SRC)/cpoint.h $(SRC)/snake.h
-	g++ -g -c -Wall -pedantic -std=c++11 $< -o $@
+all: $(OBJ_DIR) $(EXEC)
 
-$(OBJ)/screen.o: $(SRC)/screen.cpp $(SRC)/screen.h $(SRC)/cpoint.h
-	g++ -g -c -Wall -pedantic -std=c++11 $< -o $@
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
 
-$(OBJ)/winsys.o: $(SRC)/winsys.cpp $(SRC)/winsys.h $(SRC)/screen.h $(SRC)/cpoint.h
-	g++ -g -c -Wall -pedantic -std=c++11 $< -o $@
+$(EXEC): $(OBJ)
+	$(COMP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-$(OBJ)/snake.o: $(SRC)/snake.cpp $(SRC)/winsys.h $(SRC)/screen.h $(SRC)/cpoint.h $(SRC)/snake.h
-	g++ -g -c -Wall -pedantic -std=c++11 $< -o $@
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.$(EXT)
+	$(COMP) $(CFLAGS) -o $@ -c $<
 
 .PHONY: clean run
 
 clean:
-	-rm winsys $(OBJ)/*.o
+	rm -rf $(OBJ_DIR) $(EXEC)
 
-run:
-	./winsys
+run: $(OBJ_DIR) $(EXEC)
+	./$(EXEC)
